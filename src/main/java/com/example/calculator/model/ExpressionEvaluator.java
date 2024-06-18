@@ -1,37 +1,66 @@
 package com.example.calculator.model;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Stack;
 
+import com.example.calculator.utils.Associativity;
+import com.example.calculator.utils.Precedence;
+
 public class ExpressionEvaluator {
+
+    private static final Map<Character, Precedence> precedenceMap = new HashMap<>();
+    private static final Map<Character, Associativity> associativityMap = new HashMap<>();
+
+    static {
+        precedenceMap.put('+', Precedence.ADD_SUBTRACT);
+        precedenceMap.put('-', Precedence.ADD_SUBTRACT);
+        precedenceMap.put('*', Precedence.MULTIPLY_DIVIDE);
+        precedenceMap.put('/', Precedence.MULTIPLY_DIVIDE);
+        precedenceMap.put('^', Precedence.POWER_ROOT);
+        precedenceMap.put('!', Precedence.FACTORIAL);
+
+        associativityMap.put('+', Associativity.LEFT);
+        associativityMap.put('-', Associativity.LEFT);
+        associativityMap.put('*', Associativity.LEFT);
+        associativityMap.put('/', Associativity.LEFT);
+        associativityMap.put('^', Associativity.RIGHT);
+        associativityMap.put('!', Associativity.LEFT);
+    }
 
     public ExpressionEvaluator() {
     }
 
+    public static int evaluatePostfix(String postfix) {
+        return 0;
+    }
+
     public static String infixToPostfix(String infix) {
+
         StringBuilder result = new StringBuilder();
-        Stack<Character> stack = new Stack<Character>();
+        Stack<Character> stack = new Stack<>();
 
-        for (int i = 0; i < infix.length(); i++) {
-            char c = infix.charAt(i);
-
-            if (Character.isLetterOrDigit(c)) {
-                result.append(c);
-            } else if (c == '(') {
-                stack.push(c);
-            } else if (c == ')') {
+        for (char token : infix.toCharArray()) {
+            if (Character.isLetterOrDigit(token)) {
+                result.append(token);
+            } else if (token == '(') {
+                stack.push(token);
+            } else if (token == ')') {
                 while (!stack.isEmpty() && stack.peek() != '(') {
                     result.append(stack.pop());
                 }
-                stack.pop(); // Remove '(' from the stack
-            } else { // c is an operator
-                while (!stack.isEmpty() && getPrecedenceScore(c) <= getPrecedenceScore(stack.peek())) {
+                stack.pop();  // pops (
+            } else {
+                while ((!stack.isEmpty() && isOperator(stack.peek())
+                        && (getPrecedence(token) < getPrecedence(stack.peek())
+                            || (getPrecedence(token) == getPrecedence(stack.peek())
+                                && getAssociativity(token) == Associativity.LEFT)))) {
                     result.append(stack.pop());
                 }
-                stack.push(c);
+                stack.push(token);
             }
         }
 
-        // Pop all the operators left in the stack
         while (!stack.isEmpty()) {
             result.append(stack.pop());
         }
@@ -39,38 +68,15 @@ public class ExpressionEvaluator {
         return result.toString();
     }
 
-    public static boolean isOperator(char c) {
-        return c == '+' || c == '-' || c == '*' || c == '/';
+    public static boolean isOperator(char token) {
+        return precedenceMap.containsKey(token);
     }
 
-    public static int getPrecedenceScore(char c) {
-        switch (c) {
-            case '^':
-                return 3;
-            case '*':
-            case '/':
-                return 2;
-            case '+':
-            case '-':
-                return 1;
-            default:
-                return 0;
-        }
+    public static Associativity getAssociativity(char token) {
+        return associativityMap.get(token);
     }
 
-    public static char associativity(char c) {
-        return (c == '^') ? 'R' : 'L';
-    }
-
-    public static boolean operatorPrecedenceCondition(char currentOp, char topOfStack) {
-        int precedenceCurrent = getPrecedenceScore(currentOp);
-        int precedenceTop = getPrecedenceScore(topOfStack);
-
-        if (precedenceCurrent != precedenceTop) {
-            return precedenceCurrent < precedenceTop;
-        } else {
-            // Same precedence, check associativity
-            return associativity(currentOp) == 'L';
-        }
+    public static int getPrecedence(char token) {
+        return precedenceMap.get(token).getValue();
     }
 }

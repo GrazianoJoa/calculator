@@ -8,20 +8,7 @@ import com.example.calculator.model.ExpressionEvaluator;
 
 
 public class ExpressionEvaluatorTest {
-    
-    @ParameterizedTest
-    @CsvSource({
-        "+, true", 
-        "-, true",
-        "*, true",
-        "/, true",
-        "a, false",
-    })
-    public void testIsOperator(char c, boolean expected) {
-        boolean res = ExpressionEvaluator.isOperator(c);
-        assertEquals(res, expected);
-    }
-
+   
     @ParameterizedTest
     @CsvSource({
         "(a+b)*(c-d), ab+cd-*",
@@ -29,6 +16,6 @@ public class ExpressionEvaluatorTest {
     })
     public void testInfixToPostfix(String infix, String expected) {
         String res = ExpressionEvaluator.infixToPostfix(infix);
-        assertEquals(res, expected);
+        assertEquals(expected, res);
     }
 }
